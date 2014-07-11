@@ -14,7 +14,7 @@ NOTE: Requires node.js
 
     # postgresql-http-server --help
     PostgreSQL HTTP API Server
-    
+
     Options:
       --port      HTTP Server port      [required]  [default: 3000]
       --dbhost    PostgreSQL host       [required]  [default: "localhost"]
@@ -25,14 +25,14 @@ NOTE: Requires node.js
       --raw       Enable raw SQL usage  [boolean]
       --cors      Enable CORS support   [boolean]
       --secure    Enable Basic Auth support  [boolean]
-                  (configured via PG_BASIC_PASS and PG_BASIC_USER) 
+                  (configured via PG_BASIC_PASS and PG_BASIC_USER)
       --help      Show this message
 
 ## API Usage
 
 The API is discoverable which means you can access the root resource at /
 and follow links to subresources from there but lets say you have a database
-named testdb with a table named testtable in the public schema you can then 
+named testdb with a table named testtable in the public schema you can then
 do the following operations:
 
     Retrieve (GET) or update (PUT) a single row at:
@@ -46,7 +46,7 @@ and orderby where applicable. Examples:
 
     GET a maximum of 10 rows where cost>100 at:
     /db/testdb/schemas/public/tables/testtable/rows?where=cost>100&limit=10
-    
+
     GET rows with fields id and geom (as WKT) intersecting a polygon
     /db/testdb/schemas/public/tables/testtable/rows?select=id,ST_AsText(geom) as geom&where=st_intersects(geom,'POLYGON((10 10,10 100,100 100,100 10,10 10))'::geometry)
 
@@ -56,6 +56,27 @@ expects a JSON object with properties corresponding to column names.
 Raw SQL queries can be POSTed to the database resource. Expected data
 is a JSON object with the SQL string as property named "sql".
 
+### Calling stored procedures
+
+Example
+
+    curl -X POST -H "Content-Type: application/json" -d '{"event": {"id":"4cf487fc-dbe1-47cc-880e-ae9c7da0096d","doc": {"doc_type":"Checkin Default"}}}' http://localhost:3000/db/fireman/schemas/docstore/functions/getDocument
+
+**Note**
+
+fireman-pgdocstore requires `docstore` included in `search_path`
+
+Modify `postgresql.conf`
+
+```
+#------------------------------------------------------------------------------
+# CLIENT CONNECTION DEFAULTS
+#------------------------------------------------------------------------------
+
+# - Statement Behavior -
+
+search_path = 'docstore,"$user",public'		# schema names
+```
 ## TODOs
 
 * Use real primary key (current single row operations assume a primary key named id)
@@ -64,7 +85,7 @@ is a JSON object with the SQL string as property named "sql".
 * Optional security "firewall" (initially no access, open access to paths/operations based on configurable rules)
 * Use as "plugin" to your existing express application
 
-## License 
+## License
 
 The MIT License (MIT)
 

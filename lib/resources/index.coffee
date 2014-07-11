@@ -4,6 +4,8 @@ module.exports =
     database: require './database'
     schemas: require './schemas'
     schema: require './schema'
+    functions: require './functions'
+    function: require './function'
     tables: require './tables'
     table: require './table'
     rows: require './rows'

@@ -5,23 +5,23 @@ argv = require('optimist').argv
 class Server
   constructor: (app) ->
     @log = new (require('log'))(if process.env.NODE_ENV is 'development' then 'debug' else 'info')
-    
+
     if not app?
       app = express()
       app.configure ->
         app.use express.bodyParser()
         app.use express.methodOverride()
-        
+
       app.configure 'development', ->
       app.use express.errorHandler { dumpExceptions: true, showStack: true }
 
       app.configure 'production', ->
           app.use express.errorHandler()
-      if argv.secure 
+      if argv.secure
         app.use auth.secureAPI
     @app = app
-  
-  # Initialize 
+
+  # Initialize
   # @param [Object] options
   # @option options [String] dbhost PostgreSQL host
   # @option options [String] dbport PostgreSQL port
@@ -34,9 +34,9 @@ class Server
     @log.info "Using connection string #{connectionString}"
 
     @db = require('./db')(@log, connectionString, options.database)
-    
+
     if options.cors
-      @log.info "Enable Cross-origin Resource Sharing" 
+      @log.info "Enable Cross-origin Resource Sharing"
       @app.options '/*', (req,res,next) ->
         res.header 'Access-Control-Allow-Origin', '*'
         res.header 'Access-Control-Allow-Headers', 'origin, x-requested-with, content-type'
@@ -46,7 +46,7 @@ class Server
         res.header 'Access-Control-Allow-Origin', '*'
         res.header 'Access-Control-Allow-Headers', 'origin, x-requested-with, content-type'
         next()
-      
+
       @app.post '/*', (req,res,next) ->
         res.header 'Access-Control-Allow-Origin', '*'
         res.header 'Access-Control-Allow-Headers', 'origin, x-requested-with, content-type'
@@ -59,15 +59,17 @@ class Server
     resources.database @, options.raw
     resources.schemas @
     resources.schema @
+    resources.functions @
+    resources.function @
     resources.tables @
     resources.table @
     resources.rows @
     resources.row @
     resources.columns @
-  
+
   start: (argv) ->
     @setup argv
-    @app.listen argv.port, => 
+    @app.listen argv.port, =>
       @log.info "Listening on port #{argv.port} in #{@app.settings.env} mode"
 
 module.exports = Server

@@ -14,19 +14,15 @@ module.exports = (log, connectionString, database) ->
     ###
     query = (config) ->
         connectionStringDb = connectionString + "/" + (config.database || database)
-    
-        tokens = lexer.tokenize config.sql
-        config.sql = (token[1] for token in tokens).join " "
-    
         log.debug "Sending query to #{connectionStringDb}\nSQL: #{config.sql}\nParameters: #{JSON.stringify(config.values)}"
-        
+
         callback = (err, result) ->
             if err
                 log.error err.message
                 config.res.send 500, err.message
             else
                 config.callback result
-        
+
         pg.connect connectionStringDb, (err, client, done) ->
             if err then callback err else client.query config.sql, config.values || [], callback
             done()
@@ -45,20 +41,20 @@ module.exports = (log, connectionString, database) ->
                 config.sql += "\"#{token[1]}\""
             else
                 config.sql += token[1]
-                
+
     parseLimit = (config, limit) -> if limit
         config.sql += " LIMIT $#{config.count}"
         config.values.push parseInt limit
         config.count += 1
-        
+
     parseOffset = (config, offset) -> if offset
         config.sql += " OFFSET $#{config.count}"
         config.values.push parseInt offset
         config.count += 1
-        
+
     parseOrderBy = (config, orderby) -> if orderby
         config.sql += " ORDER BY #{orderby}"
-    
+
     parseRow = (row) ->
         fields = []
         params = []
@@ -71,16 +67,15 @@ module.exports = (log, connectionString, database) ->
             #params.push if k is 'geom' then "ST_GeomFromGeoJSON($#{count})" else "$#{count}"
             values.push v
             count += 1
-        
+
         fields: fields.join ','
         params: params.join ','
         values: values
         count: count
-    
+
     query: query
     parseWhere: parseWhere
     parseLimit: parseLimit
     parseOffset: parseOffset
     parseOrderBy: parseOrderBy
     parseRow: parseRow
-
